@@ -2,40 +2,35 @@ import { UserService } from './../services/UserService';
 import { Request, Response } from "express";
 
 export class UserController {
-  userService: UserService
+  userService: UserService;
 
-  constructor(userService = new UserService()){
+  constructor(userService = new UserService()) {
     this.userService = userService;
   }
 
-  createUser = (request: Request, response: Response) => {
+  createUser = (request: Request, response: Response): Response => {
     const user = request.body;
 
-    if (!user.name){
-        return response.status(400).json({ message: 'Bad Request: name invalid'})
+    if (!user.name || !user.email || !user.password) {
+        return response.status(400).json({ message: 'Bad Request: name, email, password invalid' });
     }
 
-    if (!user.email){
-      return response.status(400).json({ message: 'Bad Request: e-mail invalid'})
-  }
-
-    this.userService.createUser(user.name, user.email)
+    this.userService.createUser(user.name, user.email, user.password);
     return response.status(201).json({ message: "Created" });
   };
 
-  getAllUsers = (request: Request, response: Response) => {
-    const users = this.userService.getAllUsers()
-    return response.status(200).json( users )
+  getUser = (request: Request, response: Response) => {
+    return response.status(200);
   }
 
   deleteUser = (request: Request, response: Response) => {
-    const { email } = request.params
-    var del = this.userService.deleteUser(email);
+    const { email } = request.body; // Use request.body to get email from DELETE request body
 
-    if(del){
-      return response.json( {message: 'User deleted successfully'} )
+    if (!email) {
+        return response.status(400).json({ message: 'Bad Request: email is required' });
     }
 
-    return response.status(404).json({ message: 'User not found' });
+    const del = this.userService.deleteUser(email);
+    return response.status(200).json({ message: 'User deleted successfully' });
   }
 }
